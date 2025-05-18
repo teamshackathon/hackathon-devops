@@ -1,0 +1,8 @@
+[server]
+baseUrlPath = "/monitor"
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+gatherUsageStats = false
+serverPort = 8501

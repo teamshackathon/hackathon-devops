@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hackathon-devops-deployment
+  namespace: hackathon-devops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hackathon-devops-pod
+  template:
+    metadata:
+      labels:
+        app: hackathon-devops-pod
+    spec:
+      serviceAccountName: devops-service-account
+      containers:
+        - name: devops
+          image: ghcr.io/teamshackathon/prod/hackathon-devops:latest
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+            requests:
+              cpu: "150m"
+              memory: "256Mi"
