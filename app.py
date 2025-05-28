@@ -92,7 +92,6 @@ elif st.session_state["authentication_status"]:
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
-            add_log(f"Error fetching GitHub releases: {e}")
             return []
 
     # Kubernetes設定ロード関数
