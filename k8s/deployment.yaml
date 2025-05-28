@@ -14,13 +14,43 @@ spec:
         app: hackathon-devops-pod
     spec:
       serviceAccountName: devops-service-account
+      initContainers:
+      - name: init-config
+        image: busybox
+        command: ['sh', '-c', 'cp /config-source/config.json /config-writable/ && chmod 644 /config-writable/config.json']
+        volumeMounts:
+        - name: server-config
+          mountPath: /config-source
+        - name: writable-config
+          mountPath: /config-writable
       containers:
         - name: devops
           image: ghcr.io/teamshackathon/prod/hackathon-devops:latest
+          ports:
+          - containerPort: 8501
+            name: http
           resources:
             limits:
+              cpu: "1000m"
+              memory: "256Mi"
+            requests:
               cpu: "100m"
               memory: "128Mi"
-            requests:
-              cpu: "150m"
-              memory: "256Mi"
+          volumeMounts:
+          - name: config-volume
+            mountPath: /app/config.yaml
+            subPath: config.yaml
+            readOnly: true
+          - name: writable-config
+            mountPath: /app/config.json
+            subPath: config.json
+            readOnly: false
+      volumes:
+        - name: config-volume
+          secret:
+            secretName: app-config
+        - name: server-config
+          secret:
+            secretName: server-config
+        - name: writable-config
+          emptyDir: {}

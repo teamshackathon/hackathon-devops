@@ -134,10 +134,10 @@ elif st.session_state["authentication_status"]:
                 namespace=namespace,
                 body=patch
             )
-            add_log(f"Successfully restarted deployment {deployment_name} in namespace {namespace}")
+            # add_log(f"Successfully restarted deployment {deployment_name} in namespace {namespace}")
             return True
-        except Exception as e:
-            add_log(f"Error restarting deployment: {e}")
+        except Exception:
+            # add_log(f"Error restarting deployment: {e}")
             return False
 
     # Kubernetesデプロイメントのステータス取得関数
@@ -221,12 +221,13 @@ elif st.session_state["authentication_status"]:
         # スレッド間で共有状態から初期値を設定
         if f"{target_id}_stored_release_tag" in monitoring_state:
             last_release_tag = monitoring_state[f"{target_id}_stored_release_tag"]
-        
+            print(last_release_tag)
         while target_id in monitoring_state and monitoring_state[target_id]:
             try:
                 releases = get_github_releases(repo, token)
                 if releases:
                     latest_release = releases[0]
+                    print(last_release_tag, latest_release['tag_name'])
                     
                     # スレッド間の共有変数で最新のリリース情報を共有
                     monitoring_state[f"{target_id}_latest_release"] = latest_release
@@ -245,6 +246,8 @@ elif st.session_state["authentication_status"]:
                         restart_result = restart_k8s_deployment(namespace, deployment)
                         if restart_result:
                             print(f"[{target_name}] Automatically restarted deployment for new release {latest_release['tag_name']}")
+                            last_release_tag = latest_release['tag_name']
+                            monitoring_state[f"{target_id}_stored_release_tag"] = last_release_tag
                         else:
                             print(f"[{target_name}] Failed to restart deployment for new release {latest_release['tag_name']}")
                         
@@ -255,6 +258,7 @@ elif st.session_state["authentication_status"]:
                     
                     # 最新のリリースタグを記録
                     last_release_tag = latest_release['tag_name']
+                    print(last_release_tag, latest_release['tag_name'])
                     monitoring_state[f"{target_id}_stored_release_tag"] = last_release_tag
                 else:
                     print(f"[{target_name}] No releases found or error getting releases")
